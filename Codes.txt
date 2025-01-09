@@ -1,0 +1,531 @@
+2b)
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cookie Example</title>
+</head>
+<body>
+    <h2>Cookie Management</h2>
+    <a href="setCookies.jsp">Create Cookies</a><br><br>
+    <a href="getCookies.jsp">Get Cookies</a>
+</body>
+</html>
+
+
+<%@ page import="jakarta.servlet.http.Cookie" %>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Cookies</title>
+</head>
+<body>
+    <%
+        Cookie cookie1 = new Cookie("User", "JohnDoe");
+        Cookie cookie2 = new Cookie("Role", "Admin");
+        Cookie cookie3 = new Cookie("SessionID", "123456");
+
+        // Set expiration time (e.g., 1 day)
+        cookie1.setMaxAge(10);
+        cookie2.setMaxAge(20);
+        cookie3.setMaxAge(30);
+
+        // Add cookies to response
+        response.addCookie(cookie1);
+        response.addCookie(cookie2);
+        response.addCookie(cookie3);
+
+        out.println("<h3>Cookies Created Successfully!</h3>");
+        out.println("<a href='2b.html'>Back to Home</a>");
+    %>
+</body>
+</html>
+
+
+<%@ page import="jakarta.servlet.http.Cookie" %>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Get Cookies</title>
+</head>
+<body>
+    <h3>Stored Cookies</h3>
+    <%
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            out.println("<ul>");
+            for (Cookie cookie : cookies) {
+                out.println("<li>" + cookie.getName() + ": " + cookie.getValue() + "</li>");
+            }
+            out.println("</ul>");
+        } else {
+            out.println("<p>No cookies found!</p>");
+        }
+    %>
+    <a href="2b.html">Back to Home</a>
+</body>
+</html>
+
+
+4b)
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Information</title>
+</head>
+<body>
+    <h2>Retrieve Student Information</h2>
+    <form action="displayData.jsp" method="post">
+        <label for="usn">Enter USN:</label>
+        <input type="text" id="usn" name="usn" required>9
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
+
+
+<%@ page import="java.sql.*" %>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Information</title>
+</head>
+<body>
+    <%
+        // Get USN from the form
+        String usn = request.getParameter("usn");
+        String dbUrl = "jdbc:mysql://localhost:3306/cie2"; // Replace with your database URL
+        String dbUser = "root"; // Replace with your database username
+        String dbPassword = ""; // Replace with your database password
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            // Load JDBC driver
+            Class.forName("com.mysql.jdbc.Driver");
+
+            // Connect to the database
+            conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+
+            // Prepare SQL query
+            String query = "SELECT USN, Name FROM students WHERE USN = ?";
+            pstmt = conn.prepareStatement(query);
+            pstmt.setString(1, usn);
+
+            // Execute query
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                // If USN exists, display details
+                out.println("<h3>Student Details</h3>");
+                out.println("<p>USN: " + rs.getString("USN") + "</p>");
+                out.println("<p>Name: " + rs.getString("Name") + "</p>");
+            } else {
+                // If USN does not exist
+                out.println("<h3>Invalid USN</h3>");
+            }
+        } catch (Exception e) {
+            out.println("<p>Error: " + e.getMessage() + "</p>");
+        } finally {
+            // Close resources
+            if (rs != null) try { rs.close(); } catch (Exception ignored) {}
+            if (pstmt != null) try { pstmt.close(); } catch (Exception ignored) {}
+            if (conn != null) try { conn.close(); } catch (Exception ignored) {}
+        }
+    %>
+    <a href="index.html">Back to Home</a>
+</body>
+</html>
+
+7b)
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Details Form</title>
+</head>
+<body>
+    <h2>Enter Book Details</h2>
+    <form action="addbook.jsp" method="post">
+        <label for="book_no">Book No:</label>
+        <input type="number" id="book_no" name="book_no" required><br><br>
+        
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" required><br><br>
+        
+        <label for="author">Author:</label>
+        <input type="text" id="author" name="author" required><br><br>
+        
+        <label for="publication">Publication:</label>
+        <input type="text" id="publication" name="publication" required><br><br>
+        
+        <label for="price">Price:</label>
+        <input type="number" step="0.01" id="price" name="price" required><br><br>
+        
+        <button type="submit">Submit</button>
+    </form>
+    <br>
+    <h2>Retrieve Book Details</h2>
+    <form action="getbook.jsp" method="get">
+        <label for="title">Enter Title:</label>
+        <input type="text" id="title" name="title" required>
+        <button type="submit">Search</button>
+    </form>
+</body>
+</html>
+
+
+<%@ page import="java.sql.*" %>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Insert Book</title>
+</head>
+<body>
+    <%
+        // Retrieve form data
+        int bookNo = Integer.parseInt(request.getParameter("book_no"));
+        String title = request.getParameter("title");
+        String author = request.getParameter("author");
+        String publication = request.getParameter("publication");
+        double price = Double.parseDouble(request.getParameter("price"));
+
+        // Database connection details
+        String dbUrl = "jdbc:mysql://localhost:3306/cie2";
+        String dbUser = "root";
+        String dbPassword = "";
+
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        try {
+            // Load JDBC driver and establish connection
+            Class.forName("com.mysql.jdbc.Driver");
+            conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+
+            // Insert query
+            String query = "INSERT INTO books (Book_No, Title, Author, Publication, Price) VALUES (?, ?, ?, ?, ?)";
+            pstmt = conn.prepareStatement(query);
+            pstmt.setInt(1, bookNo);
+            pstmt.setString(2, title);
+            pstmt.setString(3, author);
+            pstmt.setString(4, publication);
+            pstmt.setDouble(5, price);
+
+            int rows = pstmt.executeUpdate();
+
+            if (rows > 0) {
+                out.println("<h3>Book details added successfully!</h3>");
+            }
+        } catch (Exception e) {
+            out.println("<h3>Error: " + e.getMessage() + "</h3>");
+        } finally {
+            if (pstmt != null) pstmt.close();
+            if (conn != null) conn.close();
+        }
+    %>
+    <a href="7b.jsp">Back to Home</a>
+</body>
+</html>
+
+
+<%@ page import="java.sql.*" %>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Retrieve Book</title>
+</head>
+<body>
+
+    <%
+        String title = request.getParameter("title");
+
+        if (title != null && !title.trim().isEmpty()) {
+            String dbUrl = "jdbc:mysql://localhost:3306/cie2";
+            String dbUser = "root";
+            String dbPassword = "";
+
+            Connection conn = null;
+            PreparedStatement pstmt = null;
+            ResultSet rs = null;
+
+            try {
+                Class.forName("com.mysql.jdbc.Driver");
+                conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+
+                String query = "SELECT * FROM books WHERE Title = ?";
+                pstmt = conn.prepareStatement(query);
+                pstmt.setString(1, title);
+
+                rs = pstmt.executeQuery();
+
+                if (rs.next()) {
+                    out.println("<h3>Book Details:</h3>");
+                    out.println("<p>Book No: " + rs.getInt("Book_No") + "</p>");
+                    out.println("<p>Title: " + rs.getString("Title") + "</p>");
+                    out.println("<p>Author: " + rs.getString("Author") + "</p>");
+                    out.println("<p>Publication: " + rs.getString("Publication") + "</p>");
+                    out.println("<p>Price: " + rs.getDouble("Price") + "</p>");
+                } else {
+                    out.println("<p style='color: red;'>No book found with the title '" + title + "'</p>");
+                }
+            } catch (Exception e) {
+                out.println("<p style='color: red;'>Error: " + e.getMessage() + "</p>");
+            } finally {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            }
+        }
+    %>
+        <a href="7b.jsp">Back to Home</a>
+    
+</body>
+</html>
+
+
+8b)
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cookie Example</title>
+</head>
+<body>
+    <h2>Cookie Management</h2>
+    <form action="CookieServlet" method="get">
+        <p>Click the button below to create cookies and view their status:</p>
+        <input type="submit" value="Create and View Cookies">
+    </form>
+    <p>Refresh the page after 1 minute to check which cookies remain.</p>
+</body>
+</html>
+
+package cie2;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import java.io.*;
+
+public class CookieServlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+
+        // Create 4 cookies
+        Cookie cookie1 = new Cookie("cookie1", "value1");
+        Cookie cookie2 = new Cookie("cookie2", "value2");
+        Cookie cookie3 = new Cookie("cookie3", "value3");
+        Cookie cookie4 = new Cookie("cookie4", "value4");
+
+        // Set expiry time for two cookies (1 minute)
+        cookie1.setMaxAge(60); // 1 minute
+        cookie2.setMaxAge(60); // 1 minute
+
+        // Add cookies to response
+        response.addCookie(cookie1);
+        response.addCookie(cookie2);
+        response.addCookie(cookie3);
+        response.addCookie(cookie4);
+
+        // Display cookies
+        out.println("<h2>Cookies Information:</h2>");
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                out.println("<p>" + cookie.getName() + ": " + cookie.getValue() + "</p>");
+            }
+        } else {
+            out.println("<p>No cookies found</p>");
+        }
+
+        out.println("<br><p>Refresh the page to see which cookies remain after 1 minute.</p>");
+        out.close();
+    }
+}
+
+9b)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitor Counter</title>
+</head>
+<body>
+    <h2>Welcome to the Visitor Counter Page</h2>
+    <p>This page will display how many times you have visited it.</p>
+    <form action="Visitor" method="get">
+        <p>Click the button below to see your visit count:</p>
+        <input type="submit" value="Check Visit Count">
+    </form>
+</body>
+</html>
+
+
+package week6;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
+import java.io.*;
+
+/**
+ * Servlet implementation class Visitor
+ */
+public class Visitor extends HttpServlet {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+
+        // Retrieve or create a session object
+        HttpSession session = request.getSession();
+
+        // Get the visit count from session, initialize if null
+        Integer visitCount = (Integer) session.getAttribute("visitCount");
+        if (visitCount == null) {
+            visitCount = 1; // First visit
+            session.setAttribute("visitCount", visitCount);
+            out.println("<h2>Welcome! You are visiting this page for the first time.</h2>");
+        } else {
+            visitCount++; // Increment visit count
+            session.setAttribute("visitCount", visitCount);
+            out.println("<h2>Welcome back!</h2>");
+            out.println("<p>You have visited this page " + visitCount + " times.</p>");
+        }
+
+        // Additional message
+        out.println("<br><p>Refresh the page or visit again to increase the count.</p>");
+        out.close();
+    }
+}
+
+10b)
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Movie Ticket Price</title>
+</head>
+<body>
+<center>
+    <h1>Enter Your Details</h1>
+    <form action="moviePrice.jsp" method="post">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="age">Age:</label>
+        <input type="text" id="age" name="age" required><br><br>
+
+        <button type="submit">Check Price</button>
+    </form>
+</center>
+</body>
+</html>
+
+
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Movie Ticket Price</title>
+</head>
+<body>
+    <h1>Movie Ticket Price</h1>
+    <%
+        try {
+            // Get user inputs from the form
+            String name = request.getParameter("name");
+            int age = Integer.parseInt(request.getParameter("age"));
+
+            // Determine the ticket price based on age
+            int price;
+            if (age > 62) {
+                price = 50;
+            } else if (age < 10) {
+                price = 30;
+            } else {
+                price = 80;
+            }
+
+            // Display the result
+    %>
+            <p>Hello, <b><%= name %></b>!</p>
+            <p>Your age is: <b><%= age %></b></p>
+            <p>The movie ticket price for you is: <b>Rs. <%= price %></b></p>
+    <%
+        } catch (NumberFormatException e) {
+            out.println("<p>Error: Please enter a valid age.</p>");
+        }
+    %>
+</body>
+</html>
+
+
+12b)
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Registration</title>
+</head>
+<body>
+    <h2>Register</h2>
+    <form action="welcome.jsp" method="post">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required><br><br>
+        
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br><br>
+
+        <button type="submit">Register</button>
+    </form>
+</body>
+</html>
+
+
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="jakarta.servlet.http.*" %>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome</title>
+</head>
+<body>
+    <%
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+
+        // Basic validation (replace with actual validation if needed)
+        if (username != null && password != null && !username.isEmpty() && !password.isEmpty()) {
+            HttpSession s = request.getSession();
+            s.setAttribute("username", username);
+
+    %>
+            <h2>Welcome, <%= username %>!</h2>
+    <%
+        } else {
+    %>
+            <h2>Invalid Username or Password</h2>
+            <a href="register.html">Try Again</a>
+    <%
+        }
+    %>
+</body>
+</html>
+
