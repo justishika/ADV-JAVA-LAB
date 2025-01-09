@@ -1,3 +1,57 @@
+1b)
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Employee payroll Form</title>
+</head>
+<body>
+	<h2>Employee Payroll Form</h2>
+	<form action = "EmployeeServlet" method ="post">
+		<label for="name"> Name:</label>
+		<input type="text" id="name" name = "name"required><br><br>
+		<label for="hours">Hours Worked in a Week: </label>
+		<input type ="number" id ="hours" name = "hours" required><br><br>
+		<label for="rate">Hourly Rate: </label>
+		<input type="number" id="rate" name="rate" required><br><br>		
+		<input type="submit" value="Submit">
+	</form>
+</body>
+</html>
+
+
+package cie2;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import java.io.*;
+import java.sql.*;
+public class EmployeeServlet extends HttpServlet{
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
+		resp.setContentType("text/html");
+		String name = req.getParameter("name");
+		int hours = Integer.parseInt(req.getParameter("hours"));
+		double rate = Double.parseDouble(req.getParameter("rate"));
+		double grosspay = hours*rate;
+		double tax= grosspay*0.2;
+		double netpay = grosspay-tax;
+		
+		PrintWriter out = resp.getWriter();
+		out.println("<html><head><title>Payroll Statement</title></head><body>");
+        out.println("<h2>Payroll Statement</h2>");
+        out.println("<p><strong>Employee Name:</strong> " + name + "</p>");
+        out.println("<p><strong>Hours Worked:</strong> " + hours + "</p>");
+        out.println("<p><strong>Hourly Pay Rate:</strong> $" + rate + "</p>");
+        out.println("<p><strong>Gross Pay:</strong> $" + String.format("%.2f", grosspay) + "</p>");
+        out.println("<p><strong>Tax (20%):</strong> $" + String.format("%.2f", tax) + "</p>");
+        out.println("<p><strong>Net Pay:</strong> $" + String.format("%.2f", netpay) + "</p>");
+        out.println("<a href='employeeForm.html'>Go Back</a>");
+        out.println("</body></html>");
+		
+		
+	}
+}
+
+
 2b)
 
 <!DOCTYPE html>
@@ -78,7 +132,7 @@
     <h2>Retrieve Student Information</h2>
     <form action="displayData.jsp" method="post">
         <label for="usn">Enter USN:</label>
-        <input type="text" id="usn" name="usn" required>9
+        <input type="text" id="usn" name="usn" required>
         <button type="submit">Submit</button>
     </form>
 </body>
@@ -138,6 +192,63 @@
     <a href="index.html">Back to Home</a>
 </body>
 </html>
+
+6b)
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Police Station  Details</title>
+</head>
+<body>
+	<h2>Police Station Details</h2>
+	<form action = "PoliceStation" method = "POST">
+		<label for="phone">Phone number: </label>
+		<input type = "text" name = "phone" pattern="[0-9]{10}" required><br><br>
+		
+		<input type = "submit" value = "Submit">
+	
+	</form>
+
+</body>
+</html>
+
+
+package cie2;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import java.io.*;
+import java.sql.*;
+
+public class PoliceStation extends HttpServlet{
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
+		resp.setContentType("text/html");
+		PrintWriter out = resp.getWriter();
+		
+		String phone = req.getParameter("phone");
+		String url  ="jdbc:mysql://localhost:3306/cie2practice";
+		String user = "root";
+		String pass = "";
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			Connection conn = DriverManager.getConnection(url,user,pass);
+			String sql = "SELECT * FROM policestation where phone = ?";
+			PreparedStatement pst = conn.prepareStatement(sql);
+			pst.setString(1, phone);
+			ResultSet rs = pst.executeQuery();
+			
+			if (rs.next()) {
+				out.println("<h2>Police Station Details: ");
+				out.println("<p>Phone Number: "+rs.getString("phone")+"</p>");
+				out.println("<p>Area: "+rs.getString("area")+"</p>");
+			}
+			else {
+				out.println("<h3>Invalid phone number!</h3>");
+			}
+		}catch(Exception e) {e.getMessage();}
+	}
+}
+
 
 7b)
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
@@ -277,6 +388,7 @@
                 if (rs != null) rs.close();
                 if (pstmt != null) pstmt.close();
                 if (conn != null) conn.close();
+
             }
         }
     %>
